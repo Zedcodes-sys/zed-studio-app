@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -27,13 +27,7 @@ import {
 import {
   CalendarDays,
   Camera,
-  CheckCircle2,
   CreditCard,
-  ImageIcon,
-  Phone,
-  Search,
-  User,
-  Users,
 } from "lucide-react";
 
 type PackageItem = {
@@ -324,31 +318,8 @@ function uid(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function StatusBadge({ value }: { value: string }) {
-  const map: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    confirmed: "bg-blue-100 text-blue-800",
-    completed: "bg-green-100 text-green-800",
-    cancelled: "bg-red-100 text-red-800",
-    selected: "bg-purple-100 text-purple-800",
-    dispatched: "bg-emerald-100 text-emerald-800",
-    not_sent: "bg-slate-100 text-slate-800",
-  };
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-        map[value] || "bg-slate-100 text-slate-800"
-      }`}
-    >
-      {value.replaceAll("_", " ")}
-    </span>
-  );
-}
-
 export default function ZStudioBookingApp() {
   const [state, setState] = useState<AppState>(getInitialState());
-  const [search, setSearch] = useState<string>("");
   const [selectedPackageId, setSelectedPackageId] = useState<string>(
     PACKAGES[0]?.id ?? ""
   );
@@ -390,34 +361,6 @@ export default function ZStudioBookingApp() {
       return acc;
     }, {});
   }, []);
-
-  const filteredBookings = useMemo<Booking[]>(() => {
-    const q = search.toLowerCase().trim();
-    if (!q) return state.bookings;
-
-    return state.bookings.filter(
-      (b) =>
-        b.fullName.toLowerCase().includes(q) ||
-        b.phone.toLowerCase().includes(q) ||
-        b.packageName.toLowerCase().includes(q) ||
-        b.bookingDate.includes(q)
-    );
-  }, [search, state.bookings]);
-
-  const stats = useMemo(() => {
-    const totalCustomers = state.customers.length;
-    const loyalCustomers = state.customers.filter(
-      (c) => c.totalBookings >= 2
-    ).length;
-    const confirmed = state.bookings.filter(
-      (b) => b.bookingStatus === "confirmed"
-    ).length;
-    const dispatched = state.bookings.filter(
-      (b) => b.dispatchStatus === "dispatched"
-    ).length;
-
-    return { totalCustomers, loyalCustomers, confirmed, dispatched };
-  }, [state]);
 
   function updateForm(key: keyof BookingForm, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -517,19 +460,6 @@ export default function ZStudioBookingApp() {
     alert("Booking created successfully.");
   }
 
-  function updateBooking(
-    id: string,
-    field: UpdateableBookingField,
-    value: Booking[UpdateableBookingField]
-  ) {
-    setState((prev) => ({
-      ...prev,
-      bookings: prev.bookings.map((b) =>
-        b.id === id ? { ...b, [field]: value } : b
-      ),
-    }));
-  }
-
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -539,17 +469,26 @@ export default function ZStudioBookingApp() {
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm">
                 <Camera className="h-4 w-4" /> ZED Studio Photography
               </div>
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Booking & Admin System
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm text-slate-200 md:text-base">
-                Manage customer bookings, confirm K100 deposits, track balances,
-                monitor image selection, and record dispatch status in one place.
-              </p>
-              <p className="mt-4 whitespace-pre-line text-sm text-slate-300">
-                Alick Nkhata Road, Friday’s Corner (next to Petroda Filling Station)
-                {"\n"}Call/WhatsApp: 0976888824 for Bookings.
-              </p>
+              <div className="...">
+  <h1 className="text-4xl font-bold text-white">
+    Capture Your Best Moments in Style 📸
+  </h1>
+
+  <p className="mt-3 text-slate-200 max-w-xl">
+    Book your professional photo session at ZED Studio Photography.
+    Simple booking, flexible packages, and premium quality photos.
+  </p>
+
+  {/* 👉 ADD THIS HERE */}
+  <a
+    href="https://wa.me/260976888824"
+    target="_blank"
+    className="inline-block mt-4 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-medium"
+  >
+    Chat on WhatsApp
+  </a>
+
+</div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -677,8 +616,11 @@ export default function ZStudioBookingApp() {
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl rounded-3xl">
                           <DialogHeader>
-                            <DialogTitle>Booking Policy</DialogTitle>
-                          </DialogHeader>
+  <DialogTitle>Booking Policy</DialogTitle>
+  <DialogDescription>
+    Please read the studio booking rules before confirming your booking.
+  </DialogDescription>
+</DialogHeader>
                           <div className="whitespace-pre-line text-sm leading-7 text-slate-700">
                             {POLICY_TEXT}
                           </div>
